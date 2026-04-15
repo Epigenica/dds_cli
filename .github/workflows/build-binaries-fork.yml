@@ -1,0 +1,112 @@
+# Fork-only: build PyInstaller binaries with a custom default API base (no PyPI / TestPyPI).
+# Set workflow input "api_base_url" when running manually, or configure repo Variables
+# FORK_DDS_API_BASE_URL and optionally FORK_DDS_PUBLIC_URL.
+name: Build fork binaries
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_base_url:
+        description: "Default API base baked into the binary (e.g. https://your-host.example/api/v1)"
+        required: false
+        default: ""
+      public_url:
+        description: "Optional __url__ / homepage string (default derived from api_base_url)"
+        required: false
+        default: ""
+  push:
+    branches:
+      - dev
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  binaries:
+    # Intended for forks only (upstream already has release-cli.yml).
+    if: github.repository != 'ScilifelabDataCentre/dds_cli'
+    name: PyInstaller ${{ matrix.TARGET }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-13
+            TARGET: MacOs_x86_64
+            CMD_BUILD: >
+              pyinstaller -F -c -n dds_cli_macos_x86_64 -i resources/scilifelab.icns
+              --exclude-module=tests --target-arch x86_64 --log-level INFO dds_cli/__init__.py
+            OUT_FILE_NAME: dds_cli_macos_x86_64
+          - os: windows-latest
+            TARGET: Windows_x86_64
+            CMD_BUILD: >
+              PyInstaller -F -c -n dds_cli_win_x86_64.exe -i resources/scilifelab.ico
+              --exclude-module=tests --log-level INFO dds_cli/__init__.py
+            OUT_FILE_NAME: dds_cli_win_x86_64.exe
+          - os: ubuntu-20.04
+            TARGET: Linux_x86_64
+            CMD_BUILD: >
+              pyinstaller -F -c -n dds_cli_ubuntu-20.04_x86_64 -i resources/scilifelab.icns
+              --exclude-module=tests --target-arch x86_64 --log-level INFO dds_cli/__init__.py
+            OUT_FILE_NAME: dds_cli_ubuntu-20.04_x86_64
+          - os: ubuntu-22.04
+            TARGET: Linux_x86_64
+            CMD_BUILD: >
+              pyinstaller -F -c -n dds_cli_ubuntu-22.04_x86_64 -i resources/scilifelab.icns
+              --exclude-module=tests --target-arch x86_64 --log-level INFO dds_cli/__init__.py
+            OUT_FILE_NAME: dds_cli_ubuntu-22.04_x86_64
+          - os: ubuntu-latest
+            TARGET: Linux_x86_64
+            CMD_BUILD: >
+              pyinstaller -F -c -n dds_cli_ubuntu-latest_x86_64 -i resources/scilifelab.icns
+              --exclude-module=tests --target-arch x86_64 --log-level INFO dds_cli/__init__.py
+            OUT_FILE_NAME: dds_cli_ubuntu-latest_x86_64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure endpoint patch env (inputs or repo Variables)
+        run: |
+          set -euo pipefail
+          API="${{ inputs.api_base_url }}"
+          PUB="${{ inputs.public_url }}"
+          if [[ -z "${API}" ]]; then
+            API="${{ vars.FORK_DDS_API_BASE_URL }}"
+          fi
+          if [[ -z "${PUB}" ]]; then
+            PUB="${{ vars.FORK_DDS_PUBLIC_URL }}"
+          fi
+          if [[ -z "${API}" ]]; then
+            echo "Set workflow_dispatch input api_base_url and/or repository variable FORK_DDS_API_BASE_URL."
+            exit 1
+          fi
+          {
+            echo "DDS_API_BASE=${API}"
+            echo "DDS_PUBLIC_URL=${PUB}"
+          } >> "${GITHUB_ENV}"
+
+      - name: Patch default endpoints in working tree (not committed)
+        run: python3 .github/scripts/patch_fork_endpoints.py
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install PyInstaller
+          pip install -r requirements.txt
+
+      - name: Build with PyInstaller (${{ matrix.TARGET }})
+        run: ${{ matrix.CMD_BUILD }}
+
+      - name: Test executable
+        run: "./dist/${{ matrix.OUT_FILE_NAME }} --version"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dds-cli-${{ matrix.OUT_FILE_NAME }}-${{ github.sha }}
+          path: dist/${{ matrix.OUT_FILE_NAME }}
+          if-no-files-found: error
