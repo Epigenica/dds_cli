@@ -1,6 +1,7 @@
 # Fork-only: build PyInstaller binaries with a custom default API base (no PyPI / TestPyPI).
 # Set workflow input "api_base_url" when running manually, or configure repo Variables
 # FORK_DDS_API_BASE_URL and optionally FORK_DDS_PUBLIC_URL.
+# Binaries are published as GitHub Release assets (public download URLs on the Releases page).
 name: Build fork binaries
 
 on:
@@ -14,13 +15,23 @@ on:
         description: "Optional __url__ / homepage string (default derived from api_base_url)"
         required: false
         default: ""
+      release_tag:
+        description: "GitHub release tag (default fork-binaries-<commit-sha>)"
+        required: false
+        default: ""
   push:
     branches:
       - dev
 
+permissions:
+  contents: write
+
 defaults:
   run:
     shell: bash
+
+env:
+  RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || format('fork-binaries-{0}', github.sha) }}
 
 jobs:
   binaries:
@@ -108,6 +119,30 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: dds-cli-${{ matrix.OUT_FILE_NAME }}-${{ github.sha }}
+          name: dds-cli-${{ matrix.OUT_FILE_NAME }}
           path: dist/${{ matrix.OUT_FILE_NAME }}
           if-no-files-found: error
+
+  release:
+    if: github.repository != 'ScilifelabDataCentre/dds_cli'
+    name: Publish GitHub Release
+    needs: binaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dds-cli-*
+          merge-multiple: true
+          path: dist
+
+      - name: Create release and upload binaries
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: Fork binaries ${{ env.RELEASE_TAG }}
+          prerelease: true
+          generate_release_notes: true
+          overwrite_files: true
+          files: dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
