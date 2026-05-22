@@ -48,3 +48,5 @@ timings
 .DS_Store
 *test-venv*
 test-directory*
+uv.*
+.python-version

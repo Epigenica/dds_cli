@@ -86,20 +86,11 @@ DDS_URL_BASE = DDS_URL[: DDS_URL.index("/", 8)]
 
 # Print header to STDERR
 dds_cli.utils.stderr_console.print(
-    "[#2D395C]  ︵",
-    "\n[#2D395C] (  )",
-    "\n[#2D395C]  ︶ ",
-    "\n[#2D395C] ︵︵   ︵︵",
-    "\n[#2D395C](    ) (    )",
-    "\n[#2D395C](    ) (    )[/]   [bold]Epigenica Data Delivery System",
-    f"\n[#2D395C] ︶︶   ︶︶ [/]   [blue][link={DDS_URL_BASE}]{DDS_URL_BASE}/[/link]",
-    f"\n[#2D395C] ︵︵[#44AAC9]   ︵︵[/]    [dim]CLI Version {dds_cli.__version__}",
-    "\n[#2D395C](    )[#44AAC9] (    )",
-    "\n[#2D395C](    )[#44AAC9] (    )",
-    "\n[#2D395C] ︶︶[#44AAC9]   ︶︶[/]",
-    "\n[#2D395C]         ︵",
-    "\n[#2D395C]        (  )",
-    "\n[#2D395C]         ︶ ",
+    "[#2D395C] .",
+    "\n[#2D395C] ● ●   [white]┃[/] [bold]Epigenica Data Delivery System",
+    f"\n[#2D395C] ●[#44AAC9] ●   [white]┃[/] [blue][link={DDS_URL_BASE}]{DDS_URL_BASE}/[/link]" ,
+    f"\n[#2D395C]   .   [white]┃[/] [dim]CLI Version {dds_cli.__version__}",
+    "\n",
     highlight=False,
 )
 
