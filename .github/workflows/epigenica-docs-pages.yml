@@ -2,6 +2,8 @@
 # This is a fork-specific workflow that replaces docs-github-pages-cli.yml
 # (kept disabled). Keeping a separate file means upstream changes to
 # docs-github-pages-cli.yml never cause merge conflicts here.
+#
+# Uses only actions/* and github/* to comply with Epigenica's org action policy.
 ---
 name: Epigenica Docs (GitHub Pages)
 on:
@@ -10,27 +12,42 @@ on:
       - master
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  ddsclidocumentation:
-    name: Build the DDS CLI Documentation
+  build-and-deploy:
+    name: Build and deploy CLI documentation
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
 
-      - name: Make dependencies available to Docker container
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Sphinx and package
         run: |
-          cat requirements.txt requirements-dev.txt > ./docs/requirements.txt
-      - name: Build the HTML documentation
-        uses: matthiaszepper/sphinx-action-v4@latest
-        with:
-          container: latest
-          pre-build-command: "apt-get update && apt-get -y install build-essential && pip install ."
-          build-command: "make dirhtml"
-          docs-folder: "docs/"
-      - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@v4.4.3
-        with:
-          branch: gh-pages
-          folder: docs/_build/dirhtml/
+          sudo apt-get update -qq
+          sudo apt-get install -y build-essential librsvg2-bin
+          pip install --upgrade pip
+          cat requirements.txt requirements-dev.txt > /tmp/docs-requirements.txt
+          pip install -r /tmp/docs-requirements.txt
+          pip install .
+
+      - name: Build HTML documentation
+        run: |
+          cd docs
+          make dirhtml
+
+      - name: Deploy to gh-pages branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          cd docs/_build/dirhtml
+          git init -b gh-pages
+          git add -A
+          git commit -m "Deploy docs from ${{ github.sha }}"
+          git push --force \
+            https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git \
+            gh-pages:gh-pages
