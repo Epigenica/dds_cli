@@ -21,8 +21,8 @@ from dds_cli.version import __version__
 # -- Project information -----------------------------------------------------
 
 project = "Data Delivery System"
-copyright = "2021-2022, SciLifeLab Data Centre"
-author = "SciLifeLab Data Centre"
+copyright = "2021-2022, SciLifeLab Data Centre; 2024-2026, Epigenica"
+author = "Epigenica"
 
 # -- General configuration ---------------------------------------------------
 
@@ -44,7 +44,17 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "installation.rst"]
+
+# ---------------------------------------------------------------------------
+# Epigenica brand overrides
+# Define substitutions here so .rst source files stay close to upstream.
+# ---------------------------------------------------------------------------
+rst_prolog = """
+.. |org| replace:: Epigenica
+.. |dds_url| replace:: https://dds.epigenica.se/
+.. |contact_email| replace:: nima.rafati@epigenica.se
+"""
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -54,9 +64,8 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 #
 html_theme = "alabaster"
 html_theme_options = {
-    "logo": "SciLifeLab_symbol_green.svg",
     "description": f"Version: {__version__}",
-    "github_user": "scilifelabdatacentre",
+    "github_user": "epigenica",
     "github_repo": "dds_cli",
     "github_type": "star",
     "badge_branch": "master",

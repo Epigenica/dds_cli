@@ -44,6 +44,12 @@ jobs:
       matrix:
         include:
           # macos-13 / ubuntu-20.04 retired on GitHub-hosted runners; use current labels.
+          - os: macos-latest
+            TARGET: MacOs_arm64
+            CMD_BUILD: >
+              pyinstaller -F -c -n dds_cli_macos_arm64 -i resources/scilifelab.icns
+              --exclude-module=tests --target-arch arm64 --log-level INFO dds_cli/__init__.py
+            OUT_FILE_NAME: dds_cli_macos_arm64
           - os: macos-15-intel
             TARGET: MacOs_x86_64
             CMD_BUILD: >

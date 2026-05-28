@@ -12,6 +12,8 @@ jobs:
   ddsclidocumentation:
     name: Build the DDS CLI Documentation
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
