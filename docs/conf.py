@@ -21,7 +21,8 @@ from dds_cli.version import __version__
 # -- Project information -----------------------------------------------------
 
 project = "Data Delivery System"
-copyright = "2021-2022, SciLifeLab Data Centre; 2024-2026, Epigenica"
+import datetime
+copyright = f"2021-2022, SciLifeLab Data Centre; {datetime.date.today().year}, Epigenica"
 author = "Epigenica"
 
 # -- General configuration ---------------------------------------------------
