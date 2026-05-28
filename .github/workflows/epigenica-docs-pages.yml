@@ -1,0 +1,36 @@
+# Epigenica fork: build and deploy CLI documentation to GitHub Pages.
+# This is a fork-specific workflow that replaces docs-github-pages-cli.yml
+# (kept disabled). Keeping a separate file means upstream changes to
+# docs-github-pages-cli.yml never cause merge conflicts here.
+---
+name: Epigenica Docs (GitHub Pages)
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  ddsclidocumentation:
+    name: Build the DDS CLI Documentation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make dependencies available to Docker container
+        run: |
+          cat requirements.txt requirements-dev.txt > ./docs/requirements.txt
+      - name: Build the HTML documentation
+        uses: matthiaszepper/sphinx-action-v4@latest
+        with:
+          container: latest
+          pre-build-command: "apt-get update && apt-get -y install build-essential && pip install ."
+          build-command: "make dirhtml"
+          docs-folder: "docs/"
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4.4.3
+        with:
+          branch: gh-pages
+          folder: docs/_build/dirhtml/

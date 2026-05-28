@@ -22,6 +22,8 @@ on:
   push:
     branches:
       - dev
+  release:
+    types: [published]
 
 permissions:
   contents: write
@@ -31,7 +33,7 @@ defaults:
     shell: bash
 
 env:
-  RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || format('fork-binaries-{0}', github.sha) }}
+  RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag != '' && inputs.release_tag || github.event_name == 'release' && github.event.release.tag_name || format('fork-binaries-{0}', github.sha) }}
 
 jobs:
   binaries:
