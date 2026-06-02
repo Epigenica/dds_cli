@@ -54,7 +54,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "installation.rst"]
 rst_prolog = """
 .. |org| replace:: Epigenica
 .. |dds_url| replace:: https://dds.epigenica.se/
-.. |contact_email| replace:: nima.rafati@epigenica.se
+.. |contact_email| replace:: data.team@epigenica.se
 """
 
 
