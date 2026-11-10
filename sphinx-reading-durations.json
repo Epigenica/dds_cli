@@ -1,0 +1,16 @@
+{
+    "auth": 1.058,
+    "changelog": 0.09,
+    "data": 0.033,
+    "examples": 0.065,
+    "index": 0.03,
+    "installation_epigenica": 0.015,
+    "ls": 0.013,
+    "main": 0.011,
+    "motd": 0.011,
+    "password": 0.011,
+    "project": 0.054,
+    "testing": 0.016,
+    "unit": 0.005,
+    "user": 0.027
+}
